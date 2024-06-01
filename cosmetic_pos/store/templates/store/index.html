@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cosmetic Store</title>
+</head>
+<body>
+    <h1>Products</h1>
+    <ul>
+        {% for product in products %}
+        <li>{{ product.name }} - ${{ product.price }} - Stock: {{ product.stock }}
+            <a href="{% url 'buy_product' product.id %}">Buy</a>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
