@@ -41,3 +41,24 @@ def buy_product(request, product_id):
     return render(request, 'store/buy_product.html', {'product': product, 'customers': customers})
 
 
+@login_required
+def add_product(request):
+    if request.method == 'POST':
+        name = request.POST['name']
+        price = request.POST['price']
+        stock = request.POST['stock']
+        Product.objects.create(name=name, price=price, stock=stock)
+        return redirect('index')
+    return render(request, 'store/add_product.html')
+
+@login_required
+def update_product(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+    if request.method == 'POST':
+        product.name = request.POST['name']
+        product.price = request.POST['price']
+        product.stock = request.POST['stock']
+        product.save()
+        return redirect('index')
+    return render(request, 'store/update_product.html', {'product': product})
+
