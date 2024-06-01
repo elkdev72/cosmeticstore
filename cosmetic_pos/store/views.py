@@ -1,5 +1,6 @@
 from django.shortcuts import render
-
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 from django.shortcuts import render, get_object_or_404
 from .models import Product, Customer, Transaction
