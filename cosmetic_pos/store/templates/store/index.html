@@ -1,16 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Cosmetic Store</title>
-</head>
-<body>
-    <h1>Products</h1>
-    <ul>
-        {% for product in products %}
-        <li>{{ product.name }} - ${{ product.price }} - Stock: {{ product.stock }}
-            <a href="{% url 'buy_product' product.id %}">Buy</a>
-        </li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends 'store/base.html' %}
+
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<h1 class="mt-4">Products</h1>
+<ul class="list-group">
+    {% for product in products %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ product.name }} - ${{ product.price }} - Stock: {{ product.stock }}
+        <a href="{% url 'buy_product' product.id %}" class="btn btn-primary">Buy</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
