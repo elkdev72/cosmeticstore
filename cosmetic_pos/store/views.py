@@ -1,11 +1,8 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import redirect, render, get_object_or_404
+from .models import Product, Customer, Transaction, Store
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-# Create your views here.
-from django.shortcuts import render, get_object_or_404
-from .models import Product, Customer, Transaction
-from django.http import HttpResponseRedirect
-from django.urls import reverse
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -24,8 +21,13 @@ def logout_view(request):
 
 @login_required
 def index(request):
-    products = Product.objects.all()
-    return render(request, 'store/index.html', {'products': products})
+    stores = Store.objects.all()
+    selected_store = request.GET.get('store')
+    if selected_store:
+        products = Product.objects.filter(store_id=selected_store)
+    else:
+        products = Product.objects.all()
+    return render(request, 'store/index.html', {'products': products, 'stores': stores, 'selected_store': selected_store})
 
 @login_required
 def buy_product(request, product_id):
@@ -34,14 +36,21 @@ def buy_product(request, product_id):
         customer_id = request.POST.get('customer_id')
         customer_name = request.POST.get('customer_name')
         quantity = int(request.POST['quantity'])
-
+        
         if customer_id:
             customer = get_object_or_404(Customer, pk=customer_id)
         elif customer_name:
-            first_name, last_name = customer_name.split(' ', 1)
-            customer = Customer.objects.create(first_name=first_name, last_name=last_name)
+            names = customer_name.split(' ', 1)
+            if len(names) == 2:
+                first_name, last_name = names
+                customer, created = Customer.objects.get_or_create(first_name=first_name, last_name=last_name)
+            else:
+                return render(request, 'store/buy_product.html', {
+                    'product': product,
+                    'customers': Customer.objects.all(),
+                    'error': 'Please enter a valid full name (First Last).'
+                })
         else:
-            # Handle error case where neither customer_id nor customer_name is provided
             return render(request, 'store/buy_product.html', {
                 'product': product,
                 'customers': Customer.objects.all(),
@@ -56,18 +65,18 @@ def buy_product(request, product_id):
     customers = Customer.objects.all()
     return render(request, 'store/buy_product.html', {'product': product, 'customers': customers})
 
-
-
-
 @login_required
 def add_product(request):
     if request.method == 'POST':
+        store_id = request.POST['store']
         name = request.POST['name']
         price = request.POST['price']
         stock = request.POST['stock']
-        Product.objects.create(name=name, price=price, stock=stock)
+        store = get_object_or_404(Store, pk=store_id)
+        Product.objects.create(name=name, price=price, stock=stock, store=store)
         return redirect('index')
-    return render(request, 'store/add_product.html')
+    stores = Store.objects.all()
+    return render(request, 'store/add_product.html', {'stores': stores})
 
 @login_required
 def update_product(request, product_id):
@@ -79,4 +88,3 @@ def update_product(request, product_id):
         product.save()
         return redirect('index')
     return render(request, 'store/update_product.html', {'product': product})
-
